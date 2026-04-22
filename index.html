@@ -162,7 +162,7 @@
             }
             document.getElementById('result').innerText = "جاري الاتصال بقاعدة البيانات ...";
             try {
-                let response = await fetch("/api/name_compound", {
+                let response = await fetch("https://modart-chemistry.onrender.com/api/name_compound", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ smiles: smilesCode })

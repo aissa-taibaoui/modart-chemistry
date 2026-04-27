@@ -1,13 +1,22 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 import os
 
 app = FastAPI()
 
-# دالة للتأكد من وجود الملف قبل إرساله (لتجنب الـ Not Found)
+# --- إضافة تصريح الدخول الأمني (CORS) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # يسمح لأي موقع (مثل PWABuilder) بقراءة الملفات
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ----------------------------------------
+
 def get_file_path(filename: str):
-    # يبحث في المجلد الحالي
     return os.path.join(os.getcwd(), filename)
 
 @app.get("/", response_class=HTMLResponse)
@@ -16,7 +25,7 @@ async def get_index():
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
-    return "Error: index.html not found in root directory"
+    return "Error: index.html not found"
 
 @app.get("/manifest.json")
 async def get_manifest():

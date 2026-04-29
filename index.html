@@ -5,182 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Modart Chemistry | أداة التسمية الاحترافية</title>
     
-    <link rel="manifest" href="/manifest.json">
+    <!-- التعديل الجديد: الرابط الكامل لملف الهوية (Manifest) لإجبار الأداة على قراءته -->
+    <link rel="manifest" href="https://modart-chemistry.onrender.com/manifest.json" crossorigin="use-credentials">
     
+    <!-- التعديل الجديد: الرابط الكامل لمحرك الخدمة (Service Worker) -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
+        navigator.serviceWorker.register('https://modart-chemistry.onrender.com/sw.js')
+          .then(function(registration) {
+            console.log('Service Worker registered successfully');
+          })
+          .catch(function(error) {
+            console.log('Service Worker registration failed:', error);
+          });
       }
     </script>
 
+    <!-- استدعاء مكتبة الرسم الكيميائي JSME -->
     <script type="text/javascript" src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js"></script>
+    
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --text-light: #ecf0f1;
-            --bg-color: #f8f9fa;
-        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            user-select: none; /* يمنع تحديد النصوص */
-            -webkit-user-select: none; /* للهواتف */
-        }
-        }
-        /* الهوية البصرية (Header) */
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 0;
+            touch-action: manipulation;
         }
-        .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
-        .logo span { color: var(--accent-color); }
-
-        nav button {
-            background: none;
-            border: 1px solid var(--text-light);
-            color: var(--text-light);
-            padding: 5px 15px;
-            margin-right: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.3s;
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
-        nav button.active { background-color: var(--accent-color); border-color: var(--accent-color); }
-
-        .container { flex: 1; padding: 20px; display: flex; justify-content: center; }
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            max-width: 500px;
+        #jsme_container {
             width: 100%;
+            max-width: 500px;
+            height: 400px;
+            background: white;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
         }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .button {
-            background-color: var(--accent-color);
+        button {
+            background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 1rem;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+            margin-bottom: 20px;
             width: 100%;
-            margin-top: 20px;
+            max-width: 300px;
+        }
+        button:hover {
+            background-color: #2980b9;
         }
         #result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #ebf5fb;
-            border-right: 5px solid var(--accent-color);
-            border-radius: 4px;
+            font-size: 18px;
             font-weight: bold;
-        }
-
-        /* صفحة عن التطبيق */
-        .about-section { text-align: right; line-height: 1.6; }
-        .about-section h3 { color: var(--primary-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; }
-        .tech-tag {
-            display: inline-block;
-            background: #eee;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-
-        footer {
-            text-align: center;
+            color: #27ae60;
+            background: white;
             padding: 15px;
-            background: #eee;
-            font-size: 0.9rem;
-            color: #666;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 470px;
+            min-height: 25px;
+            direction: ltr; /* للحفاظ على أسماء IUPAC الإنجليزية واضحة */
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">MOD<span>ART</span> CHEMISTRY</div>
-        <nav>
-            <button onclick="showTab('main')" id="btn-main" class="active">الرسم</button>
-            <button onclick="showTab('about')" id="btn-about">About</button>
-        </nav>
-    </header>
+    <h1>Modart Chemistry 🧪</h1>
+    
+    <!-- حاوية الرسم التي ستظهر فيها الأداة -->
+    <div id="jsme_container"></div>
 
-    <div class="container">
-        <div id="tab-main" class="tab-content active card">
-            <h2 style="text-align:center">تسمية المركبات العضوية</h2>
-            <div id="jsme_container" style="width: 100%; height: 350px;"></div>
-            <button class="button" onclick="getCompoundName()">توليد اسم IUPAC</button>
-            <div id="result">ارسم مركبك للحصول على التسمية...</div>
-        </div>
+    <button onclick="getCompoundName()">تسمية المركب</button>
 
-        <div id="tab-about" class="tab-content card about-section" style="text-align: left; direction: ltr;">
-            <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; color: var(--primary-color);">About the Project</h3>
-            <p>A smart tool designed for chemistry students and researchers, aiming to simplify the process of obtaining accurate IUPAC nomenclature for complex organic compounds through direct structural drawing.</p>
-            
-            <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; color: var(--primary-color); margin-top: 20px;">The Developer</h3>
-            <p><strong> Aissa Taibaoui</strong><br>
-            A science educator and software developer. This project merges pedagogical expertise in simplifying chemistry with modern software engineering technologies.</p>
-
-            <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; color: var(--primary-color); margin-top: 20px;">Technologies Used</h3>
-            <div style="margin-top: 10px;">
-                <span class="tech-tag">Python (FastAPI)</span>
-                <span class="tech-tag">JSME Editor</span>
-                <span class="tech-tag">PubChem API</span>
-                <span class="tech-tag">Modart Brand Architecture</span>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        All Rights Reserved © 2026 | Designed and Developed by Aissa Taibaoui
-    </footer>
+    <div id="result">ارسم مركباً واضغط على الزر...</div>
 
     <script>
+        // تهيئة أداة الرسم JSME بمجرد تحميل الصفحة
         var jsmeApplet;
         function jsmeOnLoad() {
-            jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "350px");
+            jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "100%");
         }
 
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            document.getElementById('btn-' + tabName).classList.add('active');
-        }
-
+        // دالة إرسال الرسم إلى خادم بايثون الخاص بك وجلب الاسم
         async function getCompoundName() {
-            let smilesCode = jsmeApplet.smiles();
-            if (!smilesCode) {
-                document.getElementById('result').innerText = "الرجاء رسم مركب أولاً!";
+            if (!jsmeApplet) return;
+            
+            // استخراج كود SMILES من الرسمة الكيميائية
+            var smiles = jsmeApplet.smiles();
+            var resultDiv = document.getElementById('result');
+
+            if (!smiles) {
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء رسم مركب أولاً!</span>";
                 return;
             }
-            document.getElementById('result').innerText = "جاري الاتصال بقاعدة البيانات ...";
+
+            resultDiv.innerText = "جاري البحث عن الاسم...";
+
             try {
-                let response = await fetch("https://modart-chemistry.onrender.com/api/name_compound", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ smiles: smilesCode })
+                // إرسال كود SMILES إلى خادم FastAPI (الذي تمت برمجته في main.py)
+                const response = await fetch('https://modart-chemistry.onrender.com/api/name_compound', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ smiles: smiles })
                 });
-                let data = await response.json();
-                document.getElementById('result').innerHTML = "الاسم: <span style='color:#2980b9'>" + data.iupac_name + "</span>";
+
+                const data = await response.json();
+                
+                // عرض النتيجة
+                if (data.iupac_name && data.iupac_name !== "مركب غير معروف") {
+                    resultDiv.innerText = data.iupac_name;
+                } else {
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم العثور على اسم لهذا المركب.</span>";
+                }
             } catch (error) {
-                document.getElementById('result').innerText = "خطأ: تأكد من تشغيل خادم البايثون.";
+                console.error('Error:', error);
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ في الاتصال بالخادم.</span>";
             }
         }
     </script>

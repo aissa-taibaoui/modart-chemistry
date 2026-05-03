@@ -9,13 +9,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon.png", 
+      "src": "https://modart-chemistry.onrender.com/icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon.png",
+      "src": "https://modart-chemistry.onrender.com/icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

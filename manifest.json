@@ -9,25 +9,25 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://github.com/aissa-taibaoui/modart-chemistry/blob/main/icon.png?raw=true",
+      "src": "https://raw.githubusercontent.com/aissa-taibaoui/modart-chemistry/main/icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://github.com/aissa-taibaoui/modart-chemistry/blob/main/icon.png?raw=true",
+      "src": "https://raw.githubusercontent.com/aissa-taibaoui/modart-chemistry/main/icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://github.com/aissa-taibaoui/modart-chemistry/blob/main/icon.png?raw=true",
+      "src": "https://raw.githubusercontent.com/aissa-taibaoui/modart-chemistry/main/icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://github.com/aissa-taibaoui/modart-chemistry/blob/main/icon.png?raw=true",
+      "src": "https://raw.githubusercontent.com/aissa-taibaoui/modart-chemistry/main/icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

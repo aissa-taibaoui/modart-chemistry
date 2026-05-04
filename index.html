@@ -3,26 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kimia | أداة التسمية الاحترافية</title>
+    <title>Kimia | المنصة الأكاديمية للكيمياء</title>
     
-    <!-- التعديل الجديد: الرابط الكامل لملف الهوية (Manifest) لإجبار الأداة على قراءته -->
-    <link rel="manifest" href="https://modart-chemistry.onrender.com/manifest.json" crossorigin="use-credentials">
+    <link rel="manifest" href="https://raw.githubusercontent.com/aissa-taibaoui/modart-chemistry/main/manifest.json" crossorigin="use-credentials">
     
-    <!-- التعديل الجديد: الرابط الكامل لمحرك الخدمة (Service Worker) -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('https://modart-chemistry.onrender.com/sw.js')
-          .then(function(registration) {
-            console.log('Service Worker registered successfully');
-          })
-          .catch(function(error) {
-            console.log('Service Worker registration failed:', error);
-          });
+        navigator.serviceWorker.register('https://modart-chemistry.onrender.com/sw.js');
       }
     </script>
 
-    <!-- استدعاء مكتبة الرسم الكيميائي JSME -->
     <script type="text/javascript" src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js"></script>
+
+    <script>
+      MathJax = {
+        tex: { packages: {'[+]': ['mhchem']} },
+        loader: { load: ['[tex]/mhchem'] }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
         body {
@@ -34,82 +33,112 @@
             align-items: center;
             padding: 20px;
             margin: 0;
-            touch-action: manipulation;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
+        h1 { color: #2c3e50; }
+        .search-container {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
-            font-size: 24px;
-        }
-        #jsme_container {
             width: 100%;
             max-width: 500px;
-            height: 400px;
-            background: white;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
             border: 2px solid #bdc3c7;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
+            font-size: 16px;
+            direction: ltr; /* للكتابة بالإنجليزية بسهولة */
         }
-        button {
+        .btn {
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 10px 20px;
+            font-size: 16px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 300px;
+            transition: 0.3s;
         }
-        button:hover {
-            background-color: #2980b9;
+        .btn:hover { background-color: #2980b9; }
+        .btn-draw { background-color: #27ae60; margin-bottom: 20px; width: 100%; max-width: 300px; padding: 15px; }
+        .btn-draw:hover { background-color: #219653; }
+        #jsme_container {
+            width: 100%; max-width: 500px; height: 400px;
+            background: white; border: 2px solid #bdc3c7;
+            border-radius: 8px; margin-bottom: 20px; overflow: hidden;
         }
         #result {
-            font-size: 18px;
-            font-weight: bold;
-            color: #27ae60;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 470px;
-            min-height: 25px;
-            direction: ltr; /* للحفاظ على أسماء IUPAC الإنجليزية واضحة */
+            font-size: 20px; font-weight: bold; color: #2c3e50;
+            background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;
+            width: 100%; max-width: 470px; min-height: 30px; direction: ltr;
         }
     </style>
 </head>
 <body>
 
     <h1>Kimia 🧪</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="اكتب اسم المركب بالإنجليزية (مثل Aspirin أو Benzene)">
+        <button class="btn" onclick="searchAndDraw()">بحث ورسم</button>
+    </div>
     
-    <!-- حاوية الرسم التي ستظهر فيها الأداة -->
     <div id="jsme_container"></div>
 
-    <button onclick="getCompoundName()">تسمية المركب</button>
+    <button class="btn btn-draw" onclick="getCompoundName()">تسمية الرسم وتنسيقه</button>
 
-    <div id="result">ارسم مركباً واضغط على الزر...</div>
+    <div id="result">ارسم مركباً أو ابحث عنه...</div>
 
     <script>
-        // تهيئة أداة الرسم JSME بمجرد تحميل الصفحة
         var jsmeApplet;
         function jsmeOnLoad() {
             jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "100%");
         }
 
-        // دالة إرسال الرسم إلى خادم بايثون الخاص بك وجلب الاسم
+        // دالة البحث الجديدة (تأخذ النص وترسمه)
+        async function searchAndDraw() {
+            if (!jsmeApplet) return;
+            var query = document.getElementById('searchInput').value;
+            var resultDiv = document.getElementById('result');
+
+            if (!query) {
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء كتابة اسم مركب!</span>";
+                return;
+            }
+
+            resultDiv.innerText = "جاري البحث ورسم المركب...";
+
+            try {
+                const response = await fetch('https://modart-chemistry.onrender.com/api/search_compound', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const data = await response.json();
+                
+                if (data.found && data.smiles) {
+                    // إجبار الأداة على رسم الكود الذي جلبناه
+                    jsmeApplet.readGenericMolecularInput(data.smiles);
+                    
+                    // تنسيق الاسم كيميائياً باستخدام MathJax
+                    let formattedFormula = `\\(\\ce{${query}}\\)`
+                    resultDiv.innerHTML = formattedFormula;
+                    MathJax.typesetPromise(); // أمر المعالجة الأكاديمية
+                } else {
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم العثور على المركب. تأكد من التهجئة الإنجليزية.</span>";
+                }
+            } catch (error) {
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ في الاتصال.</span>";
+            }
+        }
+
+        // دالة التسمية القديمة معدلة لتدعم التنسيق الأكاديمي
         async function getCompoundName() {
             if (!jsmeApplet) return;
-            
-            // استخراج كود SMILES من الرسمة الكيميائية
             var smiles = jsmeApplet.smiles();
             var resultDiv = document.getElementById('result');
 
@@ -118,29 +147,25 @@
                 return;
             }
 
-            resultDiv.innerText = "جاري البحث عن الاسم...";
+            resultDiv.innerText = "جاري التسمية...";
 
             try {
-                // إرسال كود SMILES إلى خادم FastAPI (الذي تمت برمجته في main.py)
                 const response = await fetch('https://modart-chemistry.onrender.com/api/name_compound', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ smiles: smiles })
                 });
 
                 const data = await response.json();
                 
-                // عرض النتيجة
                 if (data.iupac_name && data.iupac_name !== "مركب غير معروف") {
-                    resultDiv.innerText = data.iupac_name;
+                    // إذا أردت يوماً إظهار معادلة كاملة، استخدم \ce{}
+                    resultDiv.innerHTML = data.iupac_name;
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم العثور على اسم لهذا المركب.</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم العثور على اسم.</span>";
                 }
             } catch (error) {
-                console.error('Error:', error);
-                resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ في الاتصال بالخادم.</span>";
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ في الاتصال.</span>";
             }
         }
     </script>

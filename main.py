@@ -56,31 +56,21 @@ from pydantic import BaseModel
 # نموذج استقبال البيانات للبحث
 class SearchRequest(BaseModel):
     query: str
-@app.post("/api/search_compound")
-async def search_compound(req: SearchRequest):
-    query = req.query.strip()
-    
-    # استخدام قاعدة بيانات NCI Cactus بدلاً من PubChem لتجنب الحظر
-    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            smiles = response.text.strip()
-            return {"smiles": smiles, "found": True}
-        else:
-            return {"error": "لم يتم العثور على المركب", "found": False}
-    except Exception as e:
-        return {"error": str(e), "found": False}
-    @app.get("/download_mol/")
+# ... (الأكواد السابقة)
+
+@app.get("/download_mol/")
 async def download_mol(smiles: str):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise HTTPException(status_code=400, detail="صيغة SMILES غير صالحة")
     
-    # تحويل الجزيء إلى صيغة MOL القياسية التي تفهمها كل برامج الكيمياء
     mol_block = Chem.MolToMolBlock(mol)
     return Response(
         content=mol_block, 
         media_type="chemical/x-mdl-molfile", 
         headers={"Content-Disposition": "attachment; filename=molecule.mol"}
     )
+
+@app.get("/", response_class=HTMLResponse)
+async def get_interface():
+# ... (باقي كود الواجهة)

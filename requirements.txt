@@ -1,4 +1,5 @@
 fastapi
 uvicorn
+rdkit
 requests
-requests
+pydantic

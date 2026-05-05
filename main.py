@@ -73,3 +73,18 @@ async def search_compound(req: SearchRequest):
             return {"error": "لم يتم العثور على المركب", "found": False}
     except Exception as e:
         return {"error": str(e), "found": False}
+        @app.post("/api/search_compound")
+async def search_compound(req: SearchRequest):
+    query = req.query.strip()
+    
+    # استخدام قاعدة بيانات NCI Cactus بدلاً من PubChem لتجنب الحظر
+    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            smiles = response.text.strip()
+            return {"smiles": smiles, "found": True}
+        else:
+            return {"error": "لم يتم العثور على المركب", "found": False}
+    except Exception as e:
+        return {"error": str(e), "found": False}

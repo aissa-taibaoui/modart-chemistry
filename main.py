@@ -71,3 +71,16 @@ async def search_compound(req: SearchRequest):
             return {"error": "لم يتم العثور على المركب", "found": False}
     except Exception as e:
         return {"error": str(e), "found": False}
+    @app.get("/download_mol/")
+async def download_mol(smiles: str):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise HTTPException(status_code=400, detail="صيغة SMILES غير صالحة")
+    
+    # تحويل الجزيء إلى صيغة MOL القياسية التي تفهمها كل برامج الكيمياء
+    mol_block = Chem.MolToMolBlock(mol)
+    return Response(
+        content=mol_block, 
+        media_type="chemical/x-mdl-molfile", 
+        headers={"Content-Disposition": "attachment; filename=molecule.mol"}
+    )

@@ -56,24 +56,7 @@ from pydantic import BaseModel
 # نموذج استقبال البيانات للبحث
 class SearchRequest(BaseModel):
     query: str
-
 @app.post("/api/search_compound")
-async def search_compound(req: SearchRequest):
-    query = req.query.strip()
-    
-    # محاولة جلب كود SMILES من قاعدة PubChem بناءً على الاسم المكتوب
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{query}/property/CanonicalSMILES/JSON"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            smiles = data['PropertyTable']['Properties'][0]['CanonicalSMILES']
-            return {"smiles": smiles, "found": True}
-        else:
-            return {"error": "لم يتم العثور على المركب", "found": False}
-    except Exception as e:
-        return {"error": str(e), "found": False}
-        @app.post("/api/search_compound")
 async def search_compound(req: SearchRequest):
     query = req.query.strip()
     

@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # ==========================================
-
+# تم وضع مفتاحك السري هنا مباشرة
 GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
 # ==========================================
 
@@ -61,7 +61,8 @@ class SearchRequest(BaseModel):
 @app.post("/api/search_compound")
 async def search_compound(req: SearchRequest):
     query = req.query.strip()
-    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
+    # تمزيق الرابط لمنع الأقواس
+    url = "https://" + "cactus.nci.nih.gov" + f"/chemical/structure/{query}/smiles"
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -74,7 +75,8 @@ async def search_compound(req: SearchRequest):
 @app.post("/api/name_compound")
 async def name_compound(info: dict):
     smiles = info.get("smiles")
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
+    # تمزيق الرابط لمنع الأقواس
+    url = "https://" + "pubchem.ncbi.nlm.nih.gov" + f"/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
     response = requests.get(url)
     if response.status_code == 200:
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
@@ -107,13 +109,12 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "ضـع_مفـتاحك_هنا" or not clean_key.startswith("AIza"):
-        return {"html": "<p style='color:#e74c3c;'>⚠️ عذراً أستاذ عيسى، لقد نسيت وضع مفتاح Google API الحقيقي في ملف البايثون!</p>"}
 
-    # تم فصل الرابط لتجنب إضافة المتصفح لأقواس الروابط التشعبية عند النسخ!
-    base_url = "[https://generativelanguage.googleapis.com](https://generativelanguage.googleapis.com)"
+    # الخدعة البرمجية النهائية: تقطيع الرابط لـ 3 أجزاء حتى لا يتدخل المتصفح!
+    protocol = "https" + "://"
+    domain = "generativelanguage" + ".googleapis.com"
     endpoint = f"/v1beta/models/gemini-1.5-flash:generateContent?key={clean_key}"
-    full_url = base_url + endpoint
+    full_url = protocol + domain + endpoint
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     

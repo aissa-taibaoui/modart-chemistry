@@ -110,9 +110,7 @@ async def generate_smart_card(req: SmartCardRequest):
     if clean_key == "ضـع_مفـتاحك_هنا":
         return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون (main.py).</p>"}
 
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={clean_key}"
     try:
         # هنا التعديل السحري: استخدام requests لقراءة الخطأ الحقيقي
         response = requests.post(url, json=payload)

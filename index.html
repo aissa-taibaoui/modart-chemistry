@@ -5,23 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kimia | المنصة الأكاديمية</title>
 
-    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/aissa-taibaoui/modart-chemistry@main/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="manifest" href="[https://cdn.jsdelivr.net/gh/aissa-taibaoui/modart-chemistry@main/manifest.json](https://cdn.jsdelivr.net/gh/aissa-taibaoui/modart-chemistry@main/manifest.json)">
+    <link href="[https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=DM+Sans:wght@400;500;700&family=Tajawal:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=DM+Sans:wght@400;500;700&family=Tajawal:wght@400;700&display=swap)" rel="stylesheet">
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css)">
 
-    <!-- مكتبات الرسم والعرض -->
-    <script type="text/javascript" src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js"></script>
+    <script type="text/javascript" src="[https://jsme-editor.github.io/dist/jsme/jsme.nocache.js](https://jsme-editor.github.io/dist/jsme/jsme.nocache.js)"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js](https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js)"></script>
 
-    <!-- مكتبة MathJax -->
     <script>
       MathJax = { tex: { packages: {'[+]': ['mhchem']} }, loader: { load: ['[tex]/mhchem'] } };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script id="MathJax-script" async src="[https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js](https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js)"></script>
 
     <style>
-        :root { --primary: #005088; --secondary: #f3f0df; --accent: #11caa0; --text: #334155; --orange: #e67e22; }
-        body { font-family: 'DM Sans', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; flex-direction: column; align-items: center; color: var(--text); }
+        :root { --primary: #005088; --secondary: #f3f0df; --accent: #11caa0; --text: #334155; --orange: #e67e22; --purple: #8e44ad; }
+        body { font-family: 'Tajawal', 'DM Sans', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; flex-direction: column; align-items: center; color: var(--text); }
         header { background: var(--primary); color: white; width: 100%; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
         header h1 { font-family: 'Merriweather', serif; margin: 0; font-size: 2.5rem; }
         header p { margin: 10px 0 0; font-size: 1.1rem; opacity: 0.9; }
@@ -30,24 +28,31 @@
         .search-group { display: flex; gap: 10px; }
         input[type="text"] { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s; direction: ltr; }
         input[type="text"]:focus { border-color: var(--accent); }
-        .btn { color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
         #jsme_container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; }
         #viewer_3d { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; display: none; position: relative; background: #ffffff; }
-        .buttons-row { display: flex; gap: 10px; width: 100%; }
-        #result { min-height: 80px; display: flex; align-items: center; justify-content: center; font-size: 20px; text-align: center; color: var(--primary); font-family: 'Merriweather', serif; direction: ltr; }
+        .buttons-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+        #result { min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: var(--primary); }
         .close-btn { position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; z-index: 10; font-family: 'DM Sans', sans-serif;}
+        
+        /* تنسيقات البطاقة الذكية */
+        .smart-card-content { text-align: right; width: 100%; line-height: 1.8; color: #2c3e50; }
+        .smart-card-content h3 { color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px;}
+        .smart-card-content ul { list-style-type: none; padding-right: 0; }
+        .smart-card-content li { margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 5px; border-right: 4px solid var(--accent); }
+        .smart-card-content hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
     </style>
 </head>
 <body>
     <header>
         <h1>Kimia 🧪</h1>
-        <p>المنصة الأكاديمية لتسمية ورسم المركبات الكيميائية</p>
+        <p>المنصة الأكاديمية التفاعلية للكيمياء</p>
     </header>
 
     <div class="container">
         <div class="card search-group">
-            <input type="text" id="searchInput" placeholder="Search (e.g. Benzene, Aspirin)...">
+            <input type="text" id="searchInput" placeholder="ابحث عن مركب (مثال: Aspirin)...">
             <button class="btn" style="background: var(--primary);" onclick="searchAndDraw()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         </div>
 
@@ -60,26 +65,29 @@
         </div>
 
         <div class="buttons-row">
-            <button class="btn" style="flex: 1; background: var(--accent);" onclick="getCompoundName()"><i class="fa-solid fa-flask"></i> تسمية المركب</button>
-            <button class="btn" style="flex: 1; background: var(--orange);" onclick="generate3D()"><i class="fa-solid fa-cube"></i> عرض 3D</button>
+            <button class="btn" style="flex: 1; background: var(--accent); min-width: 120px;" onclick="getCompoundName()"><i class="fa-solid fa-flask"></i> تسمية</button>
+            <button class="btn" style="flex: 1; background: var(--orange); min-width: 120px;" onclick="generate3D()"><i class="fa-solid fa-cube"></i> 3D</button>
+            <button class="btn" style="flex: 1; background: var(--purple); min-width: 120px;" onclick="generateSmartCard()"><i class="fa-solid fa-brain"></i> البطاقة الذكية</button>
         </div>
 
-        <div class="card" id="result">ارسم مركباً أو ابحث عنه بالإنجليزية...</div>
+        <div class="card" id="result">
+            <div style="text-align: center; font-family: 'Merriweather', serif; font-size: 20px; direction: ltr;">ارسم أو ابحث عن مركب...</div>
+        </div>
     </div>
 
     <script>
         var jsmeApplet;
+        // متغيرات لحفظ اسم وصيغة المركب لاستخدامها في البطاقة الذكية
+        window.currentSmiles = "";
+        window.currentName = "";
+
         function jsmeOnLoad() {
             jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "100%");
         }
 
-        // تفعيل زر Enter في لوحة المفاتيح
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('searchInput').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchAndDraw();
-                }
+                if (e.key === 'Enter') { e.preventDefault(); searchAndDraw(); }
             });
         });
 
@@ -90,36 +98,29 @@
             
             document.getElementById('card_3d').style.display = 'none';
             document.getElementById('card_2d').style.display = 'block';
+            window.currentName = ""; // إعادة تعيين
 
             if (!query) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>الرجاء كتابة اسم مركب بالإنجليزية!</span>";
-                return;
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء كتابة اسم مركب!</span>"; return;
             }
 
-            resultDiv.innerHTML = "<span style='font-family: sans-serif; font-size: 18px;'><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث... (إذا تأخر، فالخادم يستيقظ)</span>";
+            resultDiv.innerHTML = "<span><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث...</span>";
 
             try {
-                const response = await fetch('https://modart-chemistry.onrender.com/api/search_compound', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query })
+                const response = await fetch('[https://modart-chemistry.onrender.com/api/search_compound](https://modart-chemistry.onrender.com/api/search_compound)', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: query })
                 });
-                
-                if (!response.ok) throw new Error("مشكلة في الاتصال بالخادم");
-                
                 const data = await response.json();
 
                 if (data.found && data.smiles) {
                     jsmeApplet.readGenericMolecularInput(data.smiles);
-                    let formattedFormula = `\\(\\ce{${query}}\\)`
-                    resultDiv.innerHTML = formattedFormula;
+                    window.currentSmiles = data.smiles;
+                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 24px; direction: ltr;">\\(\\ce{${query}}\\)</div>`;
                     MathJax.typesetPromise();
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>لم يتم العثور على المركب. تأكد من التهجئة (مثال: Ethanol).</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم العثور على المركب.</span>";
                 }
-            } catch (error) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>تعذر الاتصال بخادم Render. حاول مرة أخرى.</span>";
-            }
+            } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم.</span>"; }
         }
 
         async function getCompoundName() {
@@ -127,28 +128,48 @@
             var smiles = jsmeApplet.smiles();
             var resultDiv = document.getElementById('result');
 
-            if (!smiles) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>الرجاء رسم مركب أولاً!</span>";
-                return;
-            }
+            if (!smiles) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>ارسم مركباً أولاً!</span>"; return; }
 
-            resultDiv.innerHTML = "<span style='font-family: sans-serif; font-size: 18px;'><i class='fa-solid fa-spinner fa-spin'></i> جاري تحليل المركب...</span>";
+            resultDiv.innerHTML = "<span><i class='fa-solid fa-spinner fa-spin'></i> جاري التحليل...</span>";
 
             try {
-                const response = await fetch('https://modart-chemistry.onrender.com/api/name_compound', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ smiles: smiles })
+                const response = await fetch('[https://modart-chemistry.onrender.com/api/name_compound](https://modart-chemistry.onrender.com/api/name_compound)', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ smiles: smiles })
                 });
                 const data = await response.json();
 
                 if (data.iupac_name && data.iupac_name !== "مركب غير معروف") {
-                    resultDiv.innerHTML = data.iupac_name;
+                    window.currentSmiles = smiles;
+                    window.currentName = data.iupac_name;
+                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 22px; direction: ltr;">${data.iupac_name}</div>`;
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>لم يتم التعرف على المركب في قاعدة البيانات.</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم التعرف على المركب.</span>";
                 }
+            } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم.</span>"; }
+        }
+
+        // --- ميزة البطاقة الذكية بالذكاء الاصطناعي ---
+        async function generateSmartCard() {
+            var resultDiv = document.getElementById('result');
+            
+            // يجب أن يكون التطبيق قد عرف اسم المركب أولاً
+            if (!window.currentName || !window.currentSmiles) {
+                resultDiv.innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>⚠️ الرجاء الضغط على زر (تسمية) أولاً ليتعرف التطبيق على المركب!</span>";
+                return;
+            }
+
+            resultDiv.innerHTML = "<span><i class='fa-solid fa-brain fa-fade' style='color: var(--purple); font-size: 24px;'></i> <br> جاري توليد البطاقة الذكية والترجمة...</span>";
+
+            try {
+                const response = await fetch('[https://modart-chemistry.onrender.com/api/smart_card](https://modart-chemistry.onrender.com/api/smart_card)', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: window.currentName, smiles: window.currentSmiles })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<div class="smart-card-content">${data.html}</div>`;
             } catch (error) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>تعذر الاتصال بخادم Render.</span>";
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ أثناء التفكير! تأكد من إعدادات الخادم.</span>";
             }
         }
 
@@ -156,42 +177,32 @@
             if (!jsmeApplet) return;
             var smiles = jsmeApplet.smiles();
             var resultDiv = document.getElementById('result');
-
-            if (!smiles) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-family: sans-serif; font-size: 18px;'>ارسم مركباً أو ابحث عنه أولاً لتحويله لـ 3D!</span>";
-                return;
-            }
+            if (!smiles) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>ارسم مركباً لتحويله لـ 3D!</span>"; return; }
 
             document.getElementById('card_2d').style.display = 'none';
-            var card3D = document.getElementById('card_3d');
+            document.getElementById('card_3d').style.display = 'block';
             var viewerDiv = document.getElementById('viewer_3d');
-            card3D.style.display = 'block';
             viewerDiv.style.display = 'block';
-            viewerDiv.innerHTML = "<div style='text-align:center; margin-top: 150px; font-size: 20px; font-family: sans-serif; color: var(--primary);'>جاري بناء المجسم الفراغي <i class='fa-solid fa-spinner fa-spin'></i></div>";
+            viewerDiv.innerHTML = "<div style='text-align:center; margin-top: 150px; font-size: 20px; color: var(--primary);'>جاري بناء المجسم <i class='fa-solid fa-spinner fa-spin'></i></div>";
 
             try {
-                const response = await fetch(`https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(smiles)}/file?format=sdf&get3d=true`);
-                if (!response.ok) throw new Error("تعذر بناء المجسم لهذا المركب المعقد");
+                const response = await fetch(`[https://cactus.nci.nih.gov/chemical/structure/$](https://cactus.nci.nih.gov/chemical/structure/$){encodeURIComponent(smiles)}/file?format=sdf&get3d=true`);
+                if (!response.ok) throw new Error("تعذر بناء المجسم");
                 const sdfData = await response.text();
 
                 viewerDiv.innerHTML = '<button class="close-btn" onclick="close3D()"><i class="fa-solid fa-xmark"></i> إغلاق 3D</button>';
-
                 let viewer = $3Dmol.createViewer(viewerDiv, { backgroundColor: '#f8fafc' });
                 viewer.addModel(sdfData, "sdf");
                 viewer.setStyle({}, { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.3, colorscheme: 'Jmol' } }); 
-                viewer.zoomTo();
-                viewer.render();
-
-                resultDiv.innerHTML = "<span style='font-size: 18px; color: var(--orange); font-family: sans-serif;'><i class='fa-solid fa-hand-pointer'></i> حرّك المجسم بإصبعك لتغيير زاوية الرؤية!</span>";
-            } catch (error) {
-                viewerDiv.innerHTML = `<div style='text-align:center; margin-top: 150px; font-family: sans-serif; color: #e74c3c;'>${error.message} <br> <button class="btn" style="background:var(--primary); margin: 20px auto;" onclick="close3D()">عودة</button></div>`;
-            }
+                viewer.zoomTo(); viewer.render();
+                resultDiv.innerHTML = "<span style='color: var(--orange);'>حرّك المجسم بإصبعك!</span>";
+            } catch (error) { viewerDiv.innerHTML = `<div style='text-align:center; margin-top: 150px; color: #e74c3c;'>${error.message} <br> <button class="btn" style="background:var(--primary); margin: 20px auto;" onclick="close3D()">عودة</button></div>`; }
         }
 
         function close3D() {
             document.getElementById('card_3d').style.display = 'none';
             document.getElementById('card_2d').style.display = 'block';
-            document.getElementById('result').innerHTML = "ارسم مركباً أو ابحث عنه بالإنجليزية...";
+            document.getElementById('result').innerHTML = "<div style=\"text-align: center; font-family: 'Merriweather', serif; font-size: 20px; direction: ltr;\">ارسم أو ابحث عن مركب...</div>";
         }
     </script>
 </body>

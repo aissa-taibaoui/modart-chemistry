@@ -104,7 +104,7 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0":
+    if clean_key == "الرجاء وضع مفتاح":
         return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون لتعمل البطاقة الذكية.</p>"}
 
     # استخدام نموذج Gemini السريع

@@ -23,8 +23,8 @@ app.add_middleware(
 )
 
 # ==========================================
-# 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
-GOOGLE_API_KEY = "ضـع_مفـتاحك_هنا" 
+
+GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
 # ==========================================
 
 # --- وظائف مساعدة ---
@@ -107,16 +107,18 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ":
-        return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون (main.py).</p>"}
+    if clean_key == "ضـع_مفـتاحك_هنا" or not clean_key.startswith("AIza"):
+        return {"html": "<p style='color:#e74c3c;'>⚠️ عذراً أستاذ عيسى، لقد نسيت وضع مفتاح Google API الحقيقي في ملف البايثون!</p>"}
 
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"
+    # تم فصل الرابط لتجنب إضافة المتصفح لأقواس الروابط التشعبية عند النسخ!
+    base_url = "[https://generativelanguage.googleapis.com](https://generativelanguage.googleapis.com)"
+    endpoint = f"/v1beta/models/gemini-1.5-flash:generateContent?key={clean_key}"
+    full_url = base_url + endpoint
     
-    # هذا هو السطر الذي كان محذوفاً (payload) وتمت إعادته لمكانه!
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(full_url, json=payload)
         
         if response.status_code == 200:
             result = response.json()

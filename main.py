@@ -8,12 +8,10 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem.Draw import rdMolDraw2D
 import asyncio
 import json
-import urllib.request
-import urllib.error
 import requests
 import os
 
-app = FastAPI(title="Kimia Smart API", version="3.0")
+app = FastAPI(title="Kimia Smart API", version="3.1")
 
 # --- إعدادات الأمان (CORS) ---
 app.add_middleware(
@@ -25,12 +23,18 @@ app.add_middleware(
 )
 
 # ==========================================
-GOOGLE_API_KEY = "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0" 
+# 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
+GOOGLE_API_KEY = "ضـع_مفـتاحك_هنا" 
 # ==========================================
 
 # --- وظائف مساعدة ---
 def get_file_path(filename: str):
     return os.path.join(os.getcwd(), filename)
+
+def get_molecular_weight(smiles_string: str) -> float:
+    mol = Chem.MolFromSmiles(smiles_string)
+    if mol is None: return 0.0
+    return Descriptors.ExactMolWt(mol)
 
 # --- المسارات (Endpoints) للواجهة ---
 @app.get("/", response_class=HTMLResponse)
@@ -76,14 +80,13 @@ async def name_compound(info: dict):
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) ---
+# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) المحدثة لاكتشاف الأخطاء ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str
 
 @app.post("/api/smart_card")
 async def generate_smart_card(req: SmartCardRequest):
-    # إعداد التلقين (Prompt) لتوجيه الذكاء الاصطناعي
     prompt = f"""
     أنت معلم كيمياء جزائري مبدع. قم بإنشاء "بطاقة ذكية" للمركب الكيميائي '{req.name}' (SMILES: {req.smiles}).
     أريد الرد بتنسيق HTML نقي فقط (بدون أي علامات markdown مثل ```html).
@@ -104,21 +107,26 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "الرجاء وضع مفتاح":
-        return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون لتعمل البطاقة الذكية.</p>"}
+    if clean_key == "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0":
+        return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون (main.py).</p>"}
 
-    # استخدام نموذج Gemini السريع
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
     url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
     
     try:
-        req_obj = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-        response = await asyncio.to_thread(urllib.request.urlopen, req_obj)
-        result = json.loads(response.read().decode("utf-8"))
-        text = result["candidates"][0]["content"]["parts"][0]["text"]
+        # هنا التعديل السحري: استخدام requests لقراءة الخطأ الحقيقي
+        response = requests.post(url, json=payload)
         
-        # تنظيف الرد من علامات الماركداون إذا أضافها الذكاء الاصطناعي
-        clean_html = text.replace("```html", "").replace("```", "")
-        return {"html": clean_html}
+        if response.status_code == 200:
+            result = response.json()
+            text = result["candidates"][0]["content"]["parts"][0]["text"]
+            clean_html = text.replace("```html", "").replace("```", "")
+            return {"html": clean_html}
+        else:
+            # إذا كان هناك خطأ، سنقرأ رسالة جوجل المخبأة!
+            error_data = response.json()
+            google_msg = error_data.get("error", {}).get("message", "خطأ غير معروف من خوادم جوجل")
+            return {"html": f"<p style='color:#e74c3c; direction: ltr; text-align: left;'><b>Google API Error:</b> {google_msg}</p>"}
+            
     except Exception as e:
-        return {"html": f"<p style='color:#e74c3c;'>⚠️ عذراً، تعذر الاتصال بالذكاء الاصطناعي. التفاصيل: {str(e)}</p>"}
+        return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ في الاتصال: {str(e)}</p>"}

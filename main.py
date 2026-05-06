@@ -13,9 +13,9 @@ import urllib.error
 import requests
 import os
 
-app = FastAPI(title="Kimia Smart API", version="2.0")
+app = FastAPI(title="Kimia Smart API", version="3.0")
 
-# --- إعدادات الأمان (CORS) لضمان عمل الواجهة والتطبيق ---
+# --- إعدادات الأمان (CORS) ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,52 +25,19 @@ app.add_middleware(
 )
 
 # ==========================================
-# 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
-GOOGLE_API_KEY = "ضـع_مفـتاحك_هنا" 
+GOOGLE_API_KEY = "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0" 
 # ==========================================
 
-# --- وظائف مساعدة لنظام الملفات ---
+# --- وظائف مساعدة ---
 def get_file_path(filename: str):
     return os.path.join(os.getcwd(), filename)
 
-def get_molecular_weight(smiles_string: str) -> float:
-    mol = Chem.MolFromSmiles(smiles_string)
-    if mol is None:
-        raise HTTPException(status_code=400, detail="صيغة SMILES غير صالحة")
-    return Descriptors.ExactMolWt(mol)
-
-# --- محرك الذكاء الاصطناعي (نظام التبديل التلقائي) ---
-async def get_ai_green_suggestion(reactants: List[str], product: str, economy: float) -> str:
-    prompt = f"أنت خبير كيمياء خضراء. حلل التفاعل: المتفاعلات {reactants} والناتج {product} واقتصاده الذري {economy}%. اقترح تحسيناً بالعربية (HTML)."
-    clean_key = GOOGLE_API_KEY.strip()
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    
-    # النماذج المكتشفة في جهازك لعام 2026
-    models = [
-        "models/gemini-3.1-flash-image-preview",
-        "models/gemini-3-pro-image-preview",
-        "models/gemini-2.5-computer-use-preview-10-2025"
-    ]
-    
-    for model_name in models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={clean_key}"
-        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-        try:
-            response = await asyncio.to_thread(urllib.request.urlopen, req)
-            result = json.loads(response.read().decode("utf-8"))
-            return result["candidates"][0]["content"]["parts"][0]["text"]
-        except:
-            continue
-    return "⚠️ جميع نماذج الذكاء الاصطناعي مشغولة حالياً."
-
-# --- المسارات (Endpoints) لتقديم ملفات التطبيق (PWA) ---
-
+# --- المسارات (Endpoints) للواجهة ---
 @app.get("/", response_class=HTMLResponse)
 async def get_index():
     path = get_file_path("index.html")
     if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+        with open(path, "r", encoding="utf-8") as f: return f.read()
     return "Error: index.html not found"
 
 @app.get("/manifest.json")
@@ -83,14 +50,10 @@ async def get_sw():
     path = get_file_path("sw.js")
     return FileResponse(path, media_type="application/javascript") if os.path.exists(path) else {"error": "not found"}
 
-
-# --- مسارات واجهة البحث والتسمية الجديدة ---
-
-# نموذج استقبال بيانات البحث
+# --- مسار البحث ---
 class SearchRequest(BaseModel):
     query: str
 
-# الدالة المفقودة التي ستصلح البحث!
 @app.post("/api/search_compound")
 async def search_compound(req: SearchRequest):
     query = req.query.strip()
@@ -98,57 +61,64 @@ async def search_compound(req: SearchRequest):
     try:
         response = requests.get(url)
         if response.status_code == 200:
-            smiles = response.text.strip()
-            return {"smiles": smiles, "found": True}
-        else:
-            return {"error": "لم يتم العثور على المركب", "found": False}
+            return {"smiles": response.text.strip(), "found": True}
+        return {"error": "لم يتم العثور على المركب", "found": False}
     except Exception as e:
         return {"error": str(e), "found": False}
 
-
-# --- المسارات البرمجية (API) لخدمات Kimia الذكية القديمة ---
-
+# --- مسار التسمية ---
 @app.post("/api/name_compound")
 async def name_compound(info: dict):
     smiles = info.get("smiles")
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
     response = requests.get(url)
     if response.status_code == 200:
-        name = response.json()["PropertyTable"]["Properties"][0]["IUPACName"]
-        return {"iupac_name": name}
+        return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-@app.get("/render_molecule/")
-async def render_molecule(smiles: str):
-    mol = Chem.MolFromSmiles(smiles)
-    if mol is None: return Response(content="<svg></svg>", media_type="image/svg+xml")
-    drawer = rdMolDraw2D.MolDraw2DSVG(300, 200)
-    drawer.DrawMolecule(mol)
-    drawer.FinishDrawing()
-    return Response(content=drawer.GetDrawingText(), media_type="image/svg+xml")
+# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) ---
+class SmartCardRequest(BaseModel):
+    name: str
+    smiles: str
 
-@app.get("/download_mol/")
-async def download_mol(smiles: str):
-    mol = Chem.MolFromSmiles(smiles)
-    if mol is None: raise HTTPException(status_code=400, detail="Invalid SMILES")
-    return Response(content=Chem.MolToMolBlock(mol), media_type="chemical/x-mdl-molfile", 
-                    headers={"Content-Disposition": "attachment; filename=molecule.mol"})
+@app.post("/api/smart_card")
+async def generate_smart_card(req: SmartCardRequest):
+    # إعداد التلقين (Prompt) لتوجيه الذكاء الاصطناعي
+    prompt = f"""
+    أنت معلم كيمياء جزائري مبدع. قم بإنشاء "بطاقة ذكية" للمركب الكيميائي '{req.name}' (SMILES: {req.smiles}).
+    أريد الرد بتنسيق HTML نقي فقط (بدون أي علامات markdown مثل ```html).
+    يجب أن يحتوي الرد على هذه الأقسام بتنسيق أنيق:
+    <h3>🌍 القاموس اللغوي:</h3>
+    <ul>
+      <li><b>الاسم العلمي (IUPAC):</b> {req.name}</li>
+      <li><b>الاسم التجاري الشائع:</b> [اذكر الاسم الشائع]</li>
+      <li><b>باللغة الإيطالية 🇮🇹:</b> [الترجمة الإيطالية]</li>
+      <li><b>باللغة الفرنسية 🇫🇷:</b> [الترجمة الفرنسية]</li>
+    </ul>
+    <hr>
+    <h3>💡 في حياتنا اليومية:</h3>
+    <p>[اشرح أين نجد هذا المركب وما هي استخداماته الشائعة بأسلوب مشوق]</p>
+    <hr>
+    <h3>⚠️ خصائص المركب:</h3>
+    <p>[اذكر خصائصه مثل الحالة الفيزيائية، الرائحة، وهل هو آمن أم خطير]</p>
+    """
+    
+    clean_key = GOOGLE_API_KEY.strip()
+    if clean_key == "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0":
+        return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون لتعمل البطاقة الذكية.</p>"}
 
-class ReactionInput(BaseModel):
-    reactants: List[str]
-    desired_product: str
-
-@app.post("/calculate_atom_economy/")
-async def calculate_atom_economy(reaction: ReactionInput):
+    # استخدام نموذج Gemini السريع
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"
+    
     try:
-        mw_r = sum([get_molecular_weight(r) for r in reaction.reactants])
-        mw_p = get_molecular_weight(reaction.desired_product)
-        economy = (mw_p / mw_r) * 100
-        rating = "Green" if economy >= 80 else "Yellow" if economy >= 50 else "Red"
-        suggestion = await get_ai_green_suggestion(reaction.reactants, reaction.desired_product, round(economy, 2)) if economy < 85 else ""
-        return {
-            "atom_economy": round(economy, 2),
-            "rating": rating,
-            "ai_suggestion": suggestion
-        }
-    except Exception as e: raise HTTPException(status_code=400, detail=str(e))
+        req_obj = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+        response = await asyncio.to_thread(urllib.request.urlopen, req_obj)
+        result = json.loads(response.read().decode("utf-8"))
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
+        
+        # تنظيف الرد من علامات الماركداون إذا أضافها الذكاء الاصطناعي
+        clean_html = text.replace("```html", "").replace("```", "")
+        return {"html": clean_html}
+    except Exception as e:
+        return {"html": f"<p style='color:#e74c3c;'>⚠️ عذراً، تعذر الاتصال بالذكاء الاصطناعي. التفاصيل: {str(e)}</p>"}

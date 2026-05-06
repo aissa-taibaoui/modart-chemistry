@@ -61,7 +61,6 @@ class SearchRequest(BaseModel):
 @app.post("/api/search_compound")
 async def search_compound(req: SearchRequest):
     query = req.query.strip()
-    # تمزيق الرابط لمنع الأقواس
     url = "https://" + "cactus.nci.nih.gov" + f"/chemical/structure/{query}/smiles"
     try:
         response = requests.get(url)
@@ -75,7 +74,6 @@ async def search_compound(req: SearchRequest):
 @app.post("/api/name_compound")
 async def name_compound(info: dict):
     smiles = info.get("smiles")
-    # تمزيق الرابط لمنع الأقواس
     url = "https://" + "pubchem.ncbi.nlm.nih.gov" + f"/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
     response = requests.get(url)
     if response.status_code == 200:
@@ -110,10 +108,10 @@ async def generate_smart_card(req: SmartCardRequest):
     
     clean_key = GOOGLE_API_KEY.strip()
 
-    # الخدعة البرمجية النهائية: تقطيع الرابط لـ 3 أجزاء حتى لا يتدخل المتصفح!
     protocol = "https" + "://"
     domain = "generativelanguage" + ".googleapis.com"
-    endpoint = f"/v1beta/models/gemini-1.5-flash:generateContent?key={clean_key}"
+    # التغيير هنا: استخدام gemini-pro بدلاً من gemini-1.5-flash
+    endpoint = f"/v1beta/models/gemini-pro:generateContent?key={clean_key}"
     full_url = protocol + domain + endpoint
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}

@@ -15,7 +15,7 @@ import os
 
 app = FastAPI(title="Kimia Smart API", version="2.0")
 
-# --- إعدادات الأمان (CORS) لضمان عمل PWA و PWABuilder ---
+# --- إعدادات الأمان (CORS) لضمان عمل الواجهة والتطبيق ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -83,7 +83,30 @@ async def get_sw():
     path = get_file_path("sw.js")
     return FileResponse(path, media_type="application/javascript") if os.path.exists(path) else {"error": "not found"}
 
-# --- المسارات البرمجية (API) لخدمات Kimia الذكية ---
+
+# --- مسارات واجهة البحث والتسمية الجديدة ---
+
+# نموذج استقبال بيانات البحث
+class SearchRequest(BaseModel):
+    query: str
+
+# الدالة المفقودة التي ستصلح البحث!
+@app.post("/api/search_compound")
+async def search_compound(req: SearchRequest):
+    query = req.query.strip()
+    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            smiles = response.text.strip()
+            return {"smiles": smiles, "found": True}
+        else:
+            return {"error": "لم يتم العثور على المركب", "found": False}
+    except Exception as e:
+        return {"error": str(e), "found": False}
+
+
+# --- المسارات البرمجية (API) لخدمات Kimia الذكية القديمة ---
 
 @app.post("/api/name_compound")
 async def name_compound(info: dict):

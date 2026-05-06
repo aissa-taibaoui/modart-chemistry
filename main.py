@@ -23,8 +23,8 @@ app.add_middleware(
 )
 
 # ==========================================
-
-GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
+# 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
+GOOGLE_API_KEY = "ضـع_مفـتاحك_هنا" 
 # ==========================================
 
 # --- وظائف مساعدة ---
@@ -80,7 +80,7 @@ async def name_compound(info: dict):
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) المحدثة لاكتشاف الأخطاء ---
+# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str
@@ -107,12 +107,15 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "ضـع_مفـتاحك_هنا":
+    if clean_key == "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ":
         return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون (main.py).</p>"}
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={clean_key}"
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"
+    
+    # هذا هو السطر الذي كان محذوفاً (payload) وتمت إعادته لمكانه!
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    
     try:
-        # هنا التعديل السحري: استخدام requests لقراءة الخطأ الحقيقي
         response = requests.post(url, json=payload)
         
         if response.status_code == 200:
@@ -121,7 +124,6 @@ async def generate_smart_card(req: SmartCardRequest):
             clean_html = text.replace("```html", "").replace("```", "")
             return {"html": clean_html}
         else:
-            # إذا كان هناك خطأ، سنقرأ رسالة جوجل المخبأة!
             error_data = response.json()
             google_msg = error_data.get("error", {}).get("message", "خطأ غير معروف من خوادم جوجل")
             return {"html": f"<p style='color:#e74c3c; direction: ltr; text-align: left;'><b>Google API Error:</b> {google_msg}</p>"}

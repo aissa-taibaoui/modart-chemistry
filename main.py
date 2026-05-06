@@ -24,7 +24,7 @@ app.add_middleware(
 
 # ==========================================
 # 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
-GOOGLE_API_KEY = "ضـع_مفـتاحك_هنا" 
+GOOGLE_API_KEY = "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0" 
 # ==========================================
 
 # --- وظائف مساعدة ---

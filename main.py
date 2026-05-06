@@ -11,7 +11,7 @@ import json
 import requests
 import os
 
-app = FastAPI(title="Kimia Smart API", version="3.1")
+app = FastAPI(title="Kimia Smart API", version="3.2")
 
 # --- إعدادات الأمان (CORS) ---
 app.add_middleware(
@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # ==========================================
-# تم وضع مفتاحك السري هنا مباشرة
+# مفتاحك السري تم وضعه هنا بنجاح
 GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
 # ==========================================
 
@@ -80,7 +80,7 @@ async def name_compound(info: dict):
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الجديدة: البطاقة الذكية والقاموس (AI) ---
+# --- الميزة الجديدة: البطاقة الذكية والقاموس مع نظام (الاكتشاف التلقائي للنماذج) ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str
@@ -108,12 +108,26 @@ async def generate_smart_card(req: SmartCardRequest):
     
     clean_key = GOOGLE_API_KEY.strip()
 
-    protocol = "https" + "://"
-    domain = "generativelanguage" + ".googleapis.com"
-    # التغيير هنا: استخدام gemini-pro بدلاً من gemini-1.5-flash
-    endpoint = f"/v1beta/models/gemini-pro:generateContent?key={clean_key}"
-    full_url = protocol + domain + endpoint
-    
+    # 1. السحر الجديد: سؤال جوجل عن قائمة النماذج الصالحة والمتاحة في مفتاحك
+    models_url = f"[https://generativelanguage.googleapis.com/v1beta/models?key=](https://generativelanguage.googleapis.com/v1beta/models?key=){clean_key}"
+    try:
+        models_res = requests.get(models_url)
+        if models_res.status_code == 200:
+            models_list = models_res.json().get("models", [])
+            # البحث آلياً عن أي نموذج يدعم النصوص
+            valid_models = [m["name"] for m in models_list if "generateContent" in m.get("supportedGenerationMethods", []) and "gemini" in m["name"].lower()]
+            
+            if valid_models:
+                target_model = valid_models[0] # اختيار أول نموذج صالح تلقائياً
+            else:
+                target_model = "models/gemini-1.5-flash"
+        else:
+            target_model = "models/gemini-1.5-flash"
+    except:
+        target_model = "models/gemini-1.5-flash"
+
+    # 2. إرسال الطلب للنموذج المكتشف
+    full_url = f"[https://generativelanguage.googleapis.com/v1beta/](https://generativelanguage.googleapis.com/v1beta/){target_model}:generateContent?key={clean_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     
     try:
@@ -126,8 +140,8 @@ async def generate_smart_card(req: SmartCardRequest):
             return {"html": clean_html}
         else:
             error_data = response.json()
-            google_msg = error_data.get("error", {}).get("message", "خطأ غير معروف من خوادم جوجل")
-            return {"html": f"<p style='color:#e74c3c; direction: ltr; text-align: left;'><b>Google API Error:</b> {google_msg}</p>"}
+            google_msg = error_data.get("error", {}).get("message", "خطأ غير معروف")
+            return {"html": f"<p style='color:#e74c3c; direction: ltr; text-align: left;'><b>Google API Error ({target_model}):</b> {google_msg}</p>"}
             
     except Exception as e:
         return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ في الاتصال: {str(e)}</p>"}

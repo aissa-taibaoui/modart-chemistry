@@ -23,8 +23,8 @@ app.add_middleware(
 )
 
 # ==========================================
-# 👇👇👇 ضع مفتاح Gemini الخاص بك هنا 👇👇👇
-GOOGLE_API_KEY = "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0" 
+
+GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
 # ==========================================
 
 # --- وظائف مساعدة ---
@@ -107,7 +107,7 @@ async def generate_smart_card(req: SmartCardRequest):
     """
     
     clean_key = GOOGLE_API_KEY.strip()
-    if clean_key == "AIzaSyB4RSsfIAtXVnrtArQKTkGvgKildEDCUp0":
+    if clean_key == "ضـع_مفـتاحك_هنا":
         return {"html": "<p style='color:#e74c3c;'>⚠️ الرجاء وضع مفتاح Google API في ملف البايثون (main.py).</p>"}
 
     url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=){clean_key}"

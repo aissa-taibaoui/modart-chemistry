@@ -23,7 +23,7 @@ app.add_middleware(
 
 # ==========================================
 
-GEMINI_API_KEY = "AIzaSyD4U8tNfP5bQllKmud9NVq2o2u1Cu4yA6c" 
+GEMINI_API_KEY = "AIz............................." 
 genai.configure(api_key=GEMINI_API_KEY)
 # ==========================================
 

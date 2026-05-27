@@ -6,7 +6,7 @@ from typing import List
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.Draw import rdMolDraw2D
-import google.generativeai as genai  # المكتبة الرسمية الجديدة
+import google.generativeai as genai  # مكتبتك الرسمية الجديدة
 import requests
 import os
 
@@ -23,7 +23,7 @@ app.add_middleware(
 
 # ==========================================
 
-GEMINI_API_KEY = "AIzaSyD4U8tNfP5bQlIKmud9NVq2o2u1Cu4yA6c" 
+GEMINI_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
 genai.configure(api_key=GEMINI_API_KEY)
 # ==========================================
 
@@ -75,7 +75,7 @@ async def name_compound(info: dict):
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الابتكارية: البطاقة الذكية باستخدام المكتبة الرسمية الجديدة ---
+# --- الميزة الابتكارية: البطاقة الذكية باستخدام مكتبتك الرسمية الجديدة ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str

@@ -1,5 +1,6 @@
 fastapi
 uvicorn
-rdkit
-requests
 pydantic
+requests
+rdkit
+google-generativeai

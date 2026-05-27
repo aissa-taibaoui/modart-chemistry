@@ -6,12 +6,11 @@ from typing import List
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.Draw import rdMolDraw2D
-import asyncio
-import json
+import google.generativeai as genai  # المكتبة الرسمية الجديدة
 import requests
 import os
 
-app = FastAPI(title="Kimia Smart API", version="3.2")
+app = FastAPI(title="Kimia Smart PWA API", version="3.5")
 
 # --- إعدادات الأمان (CORS) ---
 app.add_middleware(
@@ -23,19 +22,16 @@ app.add_middleware(
 )
 
 # ==========================================
-GOOGLE_API_KEY = "AIzaSyC1XTohOea48-aT44XRddf1MMLAJT7m2MQ" 
+
+GEMINI_API_KEY = "AIzaSyD4U8tNfP5bQlIKmud9NVq2o2u1Cu4yA6c" 
+genai.configure(api_key=GEMINI_API_KEY)
 # ==========================================
 
 # --- وظائف مساعدة ---
 def get_file_path(filename: str):
     return os.path.join(os.getcwd(), filename)
 
-def get_molecular_weight(smiles_string: str) -> float:
-    mol = Chem.MolFromSmiles(smiles_string)
-    if mol is None: return 0.0
-    return Descriptors.ExactMolWt(mol)
-
-# --- المسارات (Endpoints) للواجهة ---
+# --- مسارات تقديم واجهة التطبيق (PWA) ---
 @app.get("/", response_class=HTMLResponse)
 async def get_index():
     path = get_file_path("index.html")
@@ -53,14 +49,14 @@ async def get_sw():
     path = get_file_path("sw.js")
     return FileResponse(path, media_type="application/javascript") if os.path.exists(path) else {"error": "not found"}
 
-# --- مسار البحث ---
+# --- مسار البحث عن المركبات ---
 class SearchRequest(BaseModel):
     query: str
 
 @app.post("/api/search_compound")
 async def search_compound(req: SearchRequest):
     query = req.query.strip()
-    url = "https://" + "cactus.nci.nih.gov" + f"/chemical/structure/{query}/smiles"
+    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -69,26 +65,26 @@ async def search_compound(req: SearchRequest):
     except Exception as e:
         return {"error": str(e), "found": False}
 
-# --- مسار التسمية ---
+# --- مسار التسمية من PubChem ---
 @app.post("/api/name_compound")
 async def name_compound(info: dict):
     smiles = info.get("smiles")
-    url = "https://" + "pubchem.ncbi.nlm.nih.gov" + f"/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
+    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
     response = requests.get(url)
     if response.status_code == 200:
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الجديدة: البطاقة الذكية والقاموس مع نظام (الاكتشاف التلقائي للنماذج) ---
+# --- الميزة الابتكارية: البطاقة الذكية باستخدام المكتبة الرسمية الجديدة ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str
 
 @app.post("/api/smart_card")
-async def generate_smart_card(req: SmartCardRequest):
+def generate_smart_card(req: SmartCardRequest):  # إزالة async هنا لتتوافق مع مكتبة جينشين المتزامنة
     prompt = f"""
     أنت معلم كيمياء جزائري مبدع. قم بإنشاء "بطاقة ذكية" للمركب الكيميائي '{req.name}' (SMILES: {req.smiles}).
-    أريد الرد بتنسيق HTML نقي فقط (بدون أي علامات markdown مثل ```html).
+    أريد الرد بتنسيق HTML نقي فقط ومباشر (بدون أي علامات markdown مثل ```html).
     يجب أن يحتوي الرد على هذه الأقسام بتنسيق أنيق:
     <h3>🌍 القاموس اللغوي:</h3>
     <ul>
@@ -99,48 +95,18 @@ async def generate_smart_card(req: SmartCardRequest):
     </ul>
     <hr>
     <h3>💡 في حياتنا اليومية:</h3>
-    <p>[اشرح أين نجد هذا المركب وما هي استخداماته الشائعة بأسلوب مشوق]</p>
+    <p>[اشرح أين نجد هذا المركب وما هي استخداماته الشائعة بأسلوب مشوق ومناسب للطلاب]</p>
     <hr>
-    <h3>⚠️ خصائص المركب:</h3>
+    <h3>⚠️ خصائص المركب والسلامة:</h3>
     <p>[اذكر خصائصه مثل الحالة الفيزيائية، الرائحة، وهل هو آمن أم خطير]</p>
     """
-    
-    clean_key = GOOGLE_API_KEY.strip()
-
-    # 1. السحر الجديد: سؤال جوجل عن قائمة النماذج الصالحة والمتاحة في مفتاحك
-    models_url = f"[https://generativelanguage.googleapis.com/v1beta/models?key=](https://generativelanguage.googleapis.com/v1beta/models?key=){clean_key}"
     try:
-        models_res = requests.get(models_url)
-        if models_res.status_code == 200:
-            models_list = models_res.json().get("models", [])
-            # البحث آلياً عن أي نموذج يدعم النصوص
-            valid_models = [m["name"] for m in models_list if "generateContent" in m.get("supportedGenerationMethods", []) and "gemini" in m["name"].lower()]
-            
-            if valid_models:
-                target_model = valid_models[0] # اختيار أول نموذج صالح تلقائياً
-            else:
-                target_model = "models/gemini-1.5-flash"
-        else:
-            target_model = "models/gemini-1.5-flash"
-    except:
-        target_model = "models/gemini-1.5-flash"
-
-    # 2. إرسال الطلب للنموذج المكتشف
-    full_url = f"[https://generativelanguage.googleapis.com/v1beta/](https://generativelanguage.googleapis.com/v1beta/){target_model}:generateContent?key={clean_key}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    
-    try:
-        response = requests.post(full_url, json=payload)
+        # استخدام طريقتك الرسمية والجديدة تماماً هنا
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        response = model.generate_content(prompt)
         
-        if response.status_code == 200:
-            result = response.json()
-            text = result["candidates"][0]["content"]["parts"][0]["text"]
-            clean_html = text.replace("```html", "").replace("```", "")
-            return {"html": clean_html}
-        else:
-            error_data = response.json()
-            google_msg = error_data.get("error", {}).get("message", "خطأ غير معروف")
-            return {"html": f"<p style='color:#e74c3c; direction: ltr; text-align: left;'><b>Google API Error ({target_model}):</b> {google_msg}</p>"}
-            
+        # تنظيف النص المستلم وعرضه في واجهة التطبيق
+        clean_html = response.text.replace("```html", "").replace("```", "")
+        return {"html": clean_html}
     except Exception as e:
-        return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ في الاتصال: {str(e)}</p>"}
+        return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ أثناء توليد البطاقة الذكية: {str(e)}</p>"}

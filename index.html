@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=DM+Sans:wght@400;500;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script type="text/javascript" src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/kekule/dist/themes/default/kekule.css" />
+    <script src="https://cdn.jsdelivr.net/npm/kekule/dist/kekule.min.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js"></script>
     
     <script>
@@ -22,15 +24,18 @@
         header { background: var(--primary); color: white; width: 100%; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
         header h1 { font-family: 'Merriweather', serif; margin: 0; font-size: 2.5rem; }
         header p { margin: 10px 0 0; font-size: 1.1rem; opacity: 0.9; }
-        .container { max-width: 800px; width: 90%; margin: 30px auto; display: flex; flex-direction: column; gap: 20px; }
+        .container { max-width: 900px; width: 95%; margin: 30px auto; display: flex; flex-direction: column; gap: 20px; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .search-group { display: flex; gap: 10px; }
         input[type="text"] { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s; direction: ltr; }
         input[type="text"]:focus { border-color: var(--accent); }
         .btn { color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        #jsme_container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; background: #fafafa; padding: 15px; box-sizing: border-box; }
-        #viewer_3d { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; display: none; position: relative; background: #ffffff; }
+        
+        /* تصميم الحاوية الجديدة لمحرر الرسم */
+        #kekule_container { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; background: #fafafa; }
+        
+        #viewer_3d { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; display: none; position: relative; background: #ffffff; }
         .buttons-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
         #result { min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: var(--primary); padding: 20px; text-align: center; }
         .close-btn { position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; z-index: 10; font-family: 'DM Sans', sans-serif;}
@@ -39,6 +44,9 @@
         .smart-card-content ul { list-style-type: none; padding-right: 0; }
         .smart-card-content li { margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 5px; border-right: 4px solid var(--accent); }
         .smart-card-content hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
+        
+        /* إخفاء اللوحة الجانبية لخصائص الألوان لتوسيع مساحة الرسم مثل ChemDraw */
+        .Kekule-ObjInspector { display: none !important; }
     </style>
 </head>
 <body>
@@ -54,11 +62,7 @@
         </div>
 
         <div class="card" style="padding: 10px;" id="card_2d">
-            <div id="jsme_container">
-                <div id="loading_msg" style="text-align:center; color:#7f8c8d; margin-top:160px;">
-                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري الاتصال بلوحة الرسم...
-                </div>
-            </div>
+            <div id="kekule_container"></div>
         </div>
 
         <div class="card" style="padding: 10px; display: none;" id="card_3d">
@@ -66,35 +70,51 @@
         </div>
 
         <div class="buttons-row">
-            <button class="btn" style="flex: 1; background: var(--accent); min-width: 120px;" onclick="getCompoundName()"><i class="fa-solid fa-flask"></i> تسمية</button>
+            <button class="btn" style="flex: 1; background: var(--accent); min-width: 120px;" onclick="getCompoundName()"><i class="fa-solid fa-flask"></i> التسمية الذكية</button>
             <button class="btn" style="flex: 1; background: var(--orange); min-width: 120px;" onclick="generate3D()"><i class="fa-solid fa-cube"></i> 3D</button>
             <button class="btn" style="flex: 1; background: var(--purple); min-width: 120px;" onclick="generateSmartCard()"><i class="fa-solid fa-brain"></i> البطاقة الذكية</button>
         </div>
 
         <div class="card" id="result">
-            <div style="text-align: center; font-size: 18px;">اكتب اسم مركب بالإنجليزية في شريط البحث بالأعلى واضغط بحث...</div>
+            <div style="text-align: center; font-size: 18px;">اكتب اسم مركب أو ارسمه في الأعلى...</div>
         </div>
     </div>
 
     <script>
-        var jsmeApplet = null;
+        var composer = null;
         window.currentSmiles = "";
         window.currentName = "";
 
-        function jsmeOnLoad() {
-            var msgEl = document.getElementById("loading_msg");
-            if(msgEl) msgEl.style.display = "none";
-            jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "100%");
+        // تهيئة محرر Kekule الاحترافي عند تحميل الصفحة
+        Kekule.X.domReady(function() {
+            composer = new Kekule.Editor.Composer(document.getElementById('kekule_container'));
+            composer.setDimension('100%', '100%');
+            composer.setCommonSpace(new Kekule.ChemSpace());
+            
+            // تفعيل التراجع والأدوات المتقدمة
+            composer.setEnableStyleToolbar(true);
+            composer.setEnableOperHistory(true);
+        });
+
+        // دوال برمجية للتعامل مع اللوحة الجديدة
+        function getSmilesFromEditor() {
+            if (!composer) return "";
+            try {
+                var chemObj = composer.getChemObj();
+                if (chemObj) {
+                    return Kekule.IO.saveFormatData(chemObj, 'smi');
+                }
+            } catch(e) { console.error("Kekule Export Error", e); }
+            return "";
         }
 
-        setTimeout(function() {
-            if (jsmeApplet === null) {
-                var msgEl = document.getElementById("loading_msg");
-                if (msgEl) {
-                    msgEl.innerHTML = "<div style='color:#e67e22; font-weight:bold; font-size:16px;'><i class='fa-solid fa-circle-exclamation fa-2x'></i><br><br>لوحة الرسم غير متاحة حالياً بسبب الشبكة.<br><p style='color:#334155; font-weight:normal; font-size:14px; margin-top:10px;'>💡 يمكنك استخدام صندوق البحث بالأعلى لكتابة المركب وتشغيل البطاقة الذكية فوراً.</p></div>";
-                }
-            }
-        }, 5000);
+        function setSmilesToEditor(smiles) {
+            if (!composer) return;
+            try {
+                var chemObj = Kekule.IO.loadFormatData(smiles, 'smi');
+                composer.setChemObj(chemObj);
+            } catch(e) { console.error("Kekule Import Error", e); }
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('searchInput').addEventListener('keypress', function (e) {
@@ -124,29 +144,26 @@
 
                 if (data.found && data.smiles) {
                     window.currentSmiles = data.smiles;
+                    setSmilesToEditor(data.smiles); // وضع المركب في اللوحة الجديدة
                     
-                    if (jsmeApplet) {
-                        jsmeApplet.readGenericMolecularInput(data.smiles);
-                    }
-                    
-                    resultDiv.innerHTML = data.iupac_name;
+                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 24px; direction: ltr; font-weight: bold; color: var(--primary);">\\(\\ce{${query}}\\)</div><p style="font-size:15px; color:#27ae60; margin-top:5px; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> تم العثور على المركب! يمكنك تعديله وتحديد أجزاء منه باستخدام الأدوات بالأعلى.</p>`;
                     MathJax.typesetPromise();
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لم يتم العثور على المركب. تأكد من التهجئة (مثال: Ethanol).</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لم يتم العثور على المركب.</span>";
                 }
-            } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بخادم التطبيق. تحقق من الإنترنت.</span>"; }
+            } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بخادم التطبيق.</span>"; }
         }
 
         async function getCompoundName() {
             var resultDiv = document.getElementById('result');
-            if (!jsmeApplet) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لوحة الرسم غير محملة حالياً. استخدم البحث بالاسم في الأعلى.</span>";
-                return;
+            var smiles = getSmilesFromEditor();
+            
+            if (!smiles) { 
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>ارسم مركباً على اللوحة أولاً للحصول على تسميته وشرحه!</span>"; 
+                return; 
             }
-            var smiles = jsmeApplet.smiles();
-            if (!smiles) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>ارسم مركباً على اللوحة أولاً لتسميته!</span>"; return; }
 
-            resultDiv.innerHTML = "<span><i class='fa-solid fa-spinner fa-spin'></i> جاري تحليل التسمية...</span>";
+            resultDiv.innerHTML = "<span><i class='fa-solid fa-flask fa-bounce' style='color: var(--accent);'></i> <br> يقوم الذكاء الاصطناعي الآن بدراسة المركب لصياغة اسمه وقواعد التسمية...</span>";
 
             try {
                 const response = await fetch('https://modart-chemistry.onrender.com/api/name_compound', {
@@ -154,21 +171,23 @@
                 });
                 const data = await response.json();
 
-                if (data.iupac_name && data.iupac_name !== "مركب غير معروف") {
+                if (data.iupac_name) {
                     window.currentSmiles = smiles;
-                    window.currentName = data.iupac_name;
-                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 22px; direction: ltr;">${data.iupac_name}</div>`;
+                    // عرض الشرح الذكي الجديد مباشرة
+                    resultDiv.innerHTML = data.iupac_name;
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>لم يتم التعرف على اسم IUPAC لهذا الرسم.</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ في التسمية.</span>";
                 }
             } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم.</span>"; }
         }
 
         async function generateSmartCard() {
             var resultDiv = document.getElementById('result');
+            var smiles = getSmilesFromEditor();
+            if(!smiles) smiles = window.currentSmiles;
             
-            if (!window.currentName || !window.currentSmiles) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>⚠️ الرجاء كتابة اسم المركب في الأعلى والضغط على زر 'بحث' أولاً!</span>";
+            if (!window.currentName || !smiles) {
+                resultDiv.innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>⚠️ الرجاء كتابة اسم المركب والبحث عنه قبل طلب البطاقة الذكية!</span>";
                 return;
             }
 
@@ -177,27 +196,27 @@
             try {
                 const response = await fetch('https://modart-chemistry.onrender.com/api/smart_card', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: window.currentName, smiles: window.currentSmiles })
+                    body: JSON.stringify({ name: window.currentName, smiles: smiles })
                 });
                 
                 const data = await response.json();
                 if(data.html) {
                     resultDiv.innerHTML = `<div class="smart-card-content">${data.html}</div>`;
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ. تفقّد إعدادات الذكاء الاصطناعي في الخادم.</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>حدث خطأ أثناء التواصل مع الذكاء الاصطناعي.</span>";
                 }
             } catch (error) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم لجلب البطاقة الذكية.</span>";
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم.</span>";
             }
         }
 
         async function generate3D() {
             var resultDiv = document.getElementById('result');
-            var smiles = jsmeApplet ? jsmeApplet.smiles() : "";
+            var smiles = getSmilesFromEditor();
             if (!smiles) { smiles = window.currentSmiles; }
 
             if (!smiles) { 
-                resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء البحث عن مركب أولاً لعرض مجسمه!</span>"; return; 
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء رسم مركب أولاً لعرض مجسمه الفراغي!</span>"; return; 
             }
 
             document.getElementById('card_2d').style.display = 'none';
@@ -208,7 +227,7 @@
 
             try {
                 const response = await fetch(`https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(smiles)}/file?format=sdf&get3d=true`);
-                if (!response.ok) throw new Error("تعذر بناء المجسم لهذا الجزيء");
+                if (!response.ok) throw new Error("المجسم غير متاح أو أن الروابط المرسومة غير مكتملة هندسياً.");
                 const sdfData = await response.text();
 
                 viewerDiv.innerHTML = '<button class="close-btn" onclick="close3D()"><i class="fa-solid fa-xmark"></i> إغلاق 3D</button>';
@@ -216,14 +235,14 @@
                 viewer.addModel(sdfData, "sdf");
                 viewer.setStyle({}, { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.3, colorscheme: 'Jmol' } }); 
                 viewer.zoomTo(); viewer.render();
-                resultDiv.innerHTML = "<span style='color: var(--orange); font-weight:bold;'><i class='fa-solid fa-hand-pointer'></i> تم بناء المجسم! حرّكه بإصبعك.</span>";
+                resultDiv.innerHTML = "<span style='color: var(--orange); font-weight:bold;'><i class='fa-solid fa-hand-pointer'></i> تم بناء المجسم بنجاح! حرّكه بإصبعك.</span>";
             } catch (error) { viewerDiv.innerHTML = `<div style='text-align:center; margin-top: 150px; color: #e74c3c;'>${error.message} <br> <button class="btn" style="background:var(--primary); margin: 20px auto;" onclick="close3D()">عودة</button></div>`; }
         }
 
         function close3D() {
             document.getElementById('card_3d').style.display = 'none';
             document.getElementById('card_2d').style.display = 'block';
-            document.getElementById('result').innerHTML = "<div style=\"text-align: center; font-size: 18px;\">اكتب اسم مركب بالإنجليزية في شريط البحث بالأعلى واضغط بحث...</div>";
+            document.getElementById('result').innerHTML = "<div style=\"text-align: center; font-size: 18px;\">يمكنك استكمال الرسم أو مسح الشاشة بالأدوات العلوية...</div>";
         }
     </script>
 </body>

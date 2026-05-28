@@ -129,7 +129,7 @@
                         jsmeApplet.readGenericMolecularInput(data.smiles);
                     }
                     
-                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 24px; direction: ltr; font-weight: bold; color: var(--primary);">\\(\\ce{${query}}\\)</div><p style="font-size:15px; color:#27ae60; margin-top:5px; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> تم العثور على المركب! اضغط الآن على زر البطاقة الذكية أو 3D.</p>`;
+                    resultDiv.innerHTML = data.iupac_name;
                     MathJax.typesetPromise();
                 } else {
                     resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لم يتم العثور على المركب. تأكد من التهجئة (مثال: Ethanol).</span>";

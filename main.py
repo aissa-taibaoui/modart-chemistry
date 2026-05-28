@@ -111,3 +111,30 @@ def generate_smart_card(req: SmartCardRequest):
         return {"html": clean_html}
     except Exception as e:
         return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ أثناء توليد البطاقة الذكية: {str(e)}</p>"}
+@app.post("/api/analyze_reaction")
+def analyze_reaction(info: dict):
+    reaction_smiles = info.get("smiles", "")
+    
+    # التحقق مما إذا كان الرسم تفاعلاً (يحتوي على علامة >>)
+    if ">>" not in reaction_smiles:
+        return {"error": "الرجاء رسم تفاعل كيميائي باستخدام أداة السهم."}
+        
+    reactants_smiles, products_smiles = reaction_smiles.split(">>")
+    
+    # دالة مساعدة لاستخراج الكتلة والصيغة
+    def get_mol_data(smiles_str):
+        data = []
+        for s in smiles_str.split("."): # فصل المركبات بالنقاط
+            mol = Chem.MolFromSmiles(s)
+            if mol:
+                data.append({
+                    "smiles": s,
+                    "formula": Chem.rdMolDescriptors.CalcMolFormula(mol),
+                    "mw": round(Descriptors.ExactMolWt(mol), 2)
+                })
+        return data
+
+    return {
+        "reactants": get_mol_data(reactants_smiles),
+        "products": get_mol_data(products_smiles)
+    }

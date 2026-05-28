@@ -35,7 +35,7 @@ if GEMINI_API_KEY:
 if not os.path.exists("ketcher"):
     print("جاري تحميل محرك Ketcher الاحترافي للرسم الكيميائي...")
     try:
-        url = "https://github.com/epam/ketcher/releases/download/v2.18.0/ketcher-standalone-2.18.0.zip"
+        url = "[https://github.com/epam/ketcher/releases/download/v2.18.0/ketcher-standalone-2.18.0.zip](https://github.com/epam/ketcher/releases/download/v2.18.0/ketcher-standalone-2.18.0.zip)"
         urllib.request.urlretrieve(url, "ketcher.zip")
         with zipfile.ZipFile("ketcher.zip", 'r') as zip_ref:
             zip_ref.extractall("ketcher")
@@ -75,7 +75,7 @@ class SearchRequest(BaseModel):
 @app.post("/api/search_compound")
 def search_compound(req: SearchRequest):
     query = req.query.strip()
-    url = f"https://cactus.nci.nih.gov/chemical/structure/{query}/smiles"
+    url = f"[https://cactus.nci.nih.gov/chemical/structure/](https://cactus.nci.nih.gov/chemical/structure/){query}/smiles"
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
@@ -101,8 +101,8 @@ def name_compound(info: dict):
     try:
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
-        clean_html = response.text.replace("```html", "").replace("
-```", "").strip()
+        # ا
+        clean_html = response.text.replace("```html", "").replace("```", "").strip()
         return {"iupac_name": clean_html}
     except:
         return {"iupac_name": "<span style='color:#e74c3c;'>تعذر تحليل المركب.</span>"}
@@ -127,8 +127,8 @@ def generate_smart_card(req: SmartCardRequest):
     try:
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
-        clean_html = response.text.replace("
-```html", "").replace("```", "")
+        # تم إصلاح الخطأ البرمجي هنا أيضاً
+        clean_html = response.text.replace("```html", "").replace("```", "")
         return {"html": clean_html}
     except Exception as e:
         return {"html": f"<p style='color:#e74c3c;'>⚠️ حدث خطأ: {str(e)}</p>"}

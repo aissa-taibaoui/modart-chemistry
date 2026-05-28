@@ -66,16 +66,39 @@ async def search_compound(req: SearchRequest):
     except Exception as e:
         return {"error": str(e), "found": False}
 
-# --- مسار التسمية من PubChem ---
+# --- مسار التسمية الذكي بالذكاء الاصطناعي ---
 @app.post("/api/name_compound")
-async def name_compound(info: dict):
+def name_compound(info: dict):
     smiles = info.get("smiles")
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{smiles}/property/IUPACName/JSON"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
-    return {"iupac_name": "مركب غير معروف"}
+    if not smiles:
+        return {"iupac_name": "مركب غير معروف"}
 
+    prompt = f"""
+    بصفتك أستاذ كيمياء خبير يشرح لطلابه، قم بتحليل هذا المركب الكيميائي الممثل بصيغة SMILES: {smiles}
+    أريد الرد بتنسيق HTML نقي فقط (بدون أي علامات markdown مثل ```html).
+    يجب أن يكون الرد بهذا الشكل الأنيق:
+    <div dir="rtl" style="font-family: 'Tajawal', sans-serif; text-align: right;">
+        <div style="font-size: 24px; color: #005088; direction: ltr; text-align: center; margin-bottom: 15px; font-weight: bold; font-family: 'Merriweather', serif;">[اكتب الاسم النظامي IUPAC هنا بالإنجليزية]</div>
+        <div style="font-size: 16px; color: #e67e22; margin-bottom: 10px;"><b><i class="fa-solid fa-tag"></i> الاسم الشائع:</b> [اكتب الاسم الشائع إن وجد]</div>
+        <div style="font-size: 16px; color: #334155; line-height: 1.6; background: #f8fafc; padding: 10px; border-right: 4px solid #11caa0; border-radius: 5px;"><b>💡 قاعدة التسمية:</b> [اشرح باختصار شديد وبأسلوب أكاديمي الخطوات المتبعة لتسمية هذا المركب (مثل السلسلة الرئيسية، الترقيم، المجموعات الوظيفية) لتوضيحها للمتعلم]</div>
+    </div>
+    """
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        response = model.generate_content(prompt)
+        clean_html = response.text.replace("```html", "").replace("```", "").strip()
+        return {"iupac_name": clean_html}
+    except Exception as e:
+        # نظام طوارئ: العودة إلى PubChem إذا كان هناك ضغط على خوادم الذكاء الاصطناعي
+        url = f"[https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/](https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/){smiles}/property/IUPACName/JSON"
+        try:
+            res = requests.get(url, timeout=10)
+            if res.status_code == 200:
+                name = res.json()["PropertyTable"]["Properties"][0]["IUPACName"]
+                return {"iupac_name": f"<div style='direction:ltr; text-align:center; font-weight:bold; font-size:22px;'>{name}</div>"}
+        except:
+            pass
+        return {"iupac_name": "<span style='color:#e74c3c;'>تعذر تحليل المركب.</span>"}
 # --- البطاقة الذكية بالذكاء الاصطناعي ---
 class SmartCardRequest(BaseModel):
     name: str

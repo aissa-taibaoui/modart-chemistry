@@ -4,3 +4,4 @@ pydantic
 requests
 rdkit
 google-generativeai
+aiofiles

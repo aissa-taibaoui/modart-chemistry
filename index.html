@@ -29,7 +29,7 @@
         input[type="text"]:focus { border-color: var(--accent); }
         .btn { color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        #jsme_container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; background: #fafafa; }
+        #jsme_container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; background: #fafafa; padding: 15px; box-sizing: border-box; }
         #viewer_3d { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; display: none; position: relative; background: #ffffff; }
         .buttons-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
         #result { min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: var(--primary); padding: 20px; }
@@ -55,7 +55,9 @@
 
         <div class="card" style="padding: 10px;" id="card_2d">
             <div id="jsme_container">
-                <p style="text-align:center; color:#7f8c8d; margin-top:180px;"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل لوحة الرسم... إذا بقيت بيضاء، يمكنك استخدام البحث بالأعلى مباشرة.</p>
+                <div id="loading_msg" style="text-align:center; color:#7f8c8d; margin-top:160px;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري الاتصال بسيرفر لوحة الرسم...
+                </div>
             </div>
         </div>
 
@@ -79,11 +81,21 @@
         window.currentSmiles = "";
         window.currentName = "";
 
-        // يتم استدعاؤها تلقائياً عند نجاح تحميل مكتبة الرسم
         function jsmeOnLoad() {
-            document.getElementById("jsme_container").innerHTML = "";
+            var msgEl = document.getElementById("loading_msg");
+            if(msgEl) msgEl.style.display = "none";
             jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "100%");
         }
+
+        // نظام الحماية التلقائي: إذا تأخر السيرفر الخارجي عن 5 ثوانٍ، نوجه الطالب للبحث مباشرة
+        setTimeout(function() {
+            if (jsmeApplet === null) {
+                var msgEl = document.getElementById("loading_msg");
+                if (msgEl) {
+                    msgEl.innerHTML = "<div style='color:#e67e22; font-weight:bold; font-size:16px;'><i class='fa-solid fa-circle-exclamation fa-2x'></i><br><br>لوحة الرسم اليدوي غير متاحة حالياً بسبب قيود جدار حماية الشبكة.<br><p style='color:#334155; font-weight:normal; font-size:14px; margin-top:10px;'>💡 لا تقلق يا بطل! يمكنك استخدام صندوق البحث بالأعلى مباشرة لكتابة المركب وتشغيل الـ 3D والبطاقة الذكية فوراً بنجاح.</p></div>";
+                }
+            }
+        }, 5000);
 
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('searchInput').addEventListener('keypress', function (e) {
@@ -102,9 +114,8 @@
                 resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء كتابة اسم مركب!</span>"; return;
             }
 
-            // تحديث ذكي ومباشر لاسم المركب ليعمل الذكاء الاصطناعي فوراً
             window.currentName = query;
-            resultDiv.innerHTML = "<span><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث عن المركب...</span>";
+            resultDiv.innerHTML = "<span><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث عن المركب في قاعدة البيانات...</span>";
 
             try {
                 const response = await fetch('https://modart-chemistry.onrender.com/api/search_compound', {
@@ -115,27 +126,24 @@
                 if (data.found && data.smiles) {
                     window.currentSmiles = data.smiles;
                     
-                    // إذا كانت لوحة الرسم محملة بنجاح، ارسم الجزيء فيها
                     if (jsmeApplet) {
                         jsmeApplet.readGenericMolecularInput(data.smiles);
                     }
                     
-                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 24px; direction: ltr; font-weight: bold; color: var(--primary);">\\(\\ce{${query}}\\)</div><p style="font-size:14px; color:#7f8c8d; margin-top:5px;">تم العثور على المركب بنجاح! يمكنك الآن الضغط على "البطاقة الذكية" أو "3D".</p>`;
+                    resultDiv.innerHTML = `<div style="font-family: 'Merriweather', serif; font-size: 24px; direction: ltr; font-weight: bold; color: var(--primary);">\\(\\ce{${query}}\\)</div><p style="font-size:15px; color:#27ae60; margin-top:5px; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> تم العثور على المركب! اضغط الآن على زر "البطاقة الذكية" أو "3D" في الأسفل.</p>`;
                     MathJax.typesetPromise();
                 } else {
-                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لم يتم العثور على المركب في قاعدة البيانات العالمية. تأكد من التهجئة الصحيحة.</span>";
+                    resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ لم يتم العثور على المركب. تأكد من كتابة الاسم بالإنجليزية الصحيحة (مثال: Ethanol).</span>";
                 }
             } catch (error) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>تعذر الاتصال بالخادم. تحقق من توفر الإنترنت.</span>"; }
         }
 
         async function getCompoundName() {
             var resultDiv = document.getElementById('result');
-            
             if (!jsmeApplet) {
-                resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ دالة التسمية تتطلب رسم المركب يدوياً أولاً، ولكن لوحة الرسم لم تتحمل في متصفحك حالياً. استخدم البحث بالاسم في الأعلى بدلاً من ذلك.</span>";
+                resultDiv.innerHTML = "<span style='color: #e74c3c;'>⚠️ دالة التسمية تتطلب رسم المركب يدوياً، لوحة الرسم غير محملة حالياً. استخدم البحث السريع بالاسم في الأعلى مباشرة.</span>";
                 return;
             }
-            
             var smiles = jsmeApplet.smiles();
             if (!smiles) { resultDiv.innerHTML = "<span style='color: #e74c3c;'>ارسم مركباً على اللوحة أولاً لتسميته!</span>"; return; }
 
@@ -186,12 +194,8 @@
 
         async function generate3D() {
             var resultDiv = document.getElementById('result');
-            
-            // جلب الـ SMILES إما من الرسم أو من نتيجة البحث الأخيرة
             var smiles = jsmeApplet ? jsmeApplet.smiles() : "";
-            if (!smiles) {
-                smiles = window.currentSmiles;
-            }
+            if (!smiles) { smiles = window.currentSmiles; }
 
             if (!smiles) { 
                 resultDiv.innerHTML = "<span style='color: #e74c3c;'>الرجاء البحث عن مركب أولاً لعرض مجسمه الفراغي!</span>"; return; 

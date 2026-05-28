@@ -6,11 +6,11 @@ from typing import List
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.Draw import rdMolDraw2D
-import google.generativeai as genai  # مكتبتك الرسمية الجديدة
+import google.generativeai as genai
 import requests
 import os
 
-app = FastAPI(title="Kimia Smart PWA API", version="3.5")
+app = FastAPI(title="Kimia Smart PWA API", version="3.6")
 
 # --- إعدادات الأمان (CORS) ---
 app.add_middleware(
@@ -22,9 +22,10 @@ app.add_middleware(
 )
 
 # ==========================================
-
-GEMINI_API_KEY = "AIz............................." 
-genai.configure(api_key=GEMINI_API_KEY)
+# 🔒 حماية برمجية: قراءة المفتاح سرياً من إعدادات Render
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 # ==========================================
 
 # --- وظائف مساعدة ---
@@ -75,13 +76,16 @@ async def name_compound(info: dict):
         return {"iupac_name": response.json()["PropertyTable"]["Properties"][0]["IUPACName"]}
     return {"iupac_name": "مركب غير معروف"}
 
-# --- الميزة الابتكارية: البطاقة الذكية باستخدام مكتبتك الرسمية الجديدة ---
+# --- البطاقة الذكية بالذكاء الاصطناعي ---
 class SmartCardRequest(BaseModel):
     name: str
     smiles: str
 
 @app.post("/api/smart_card")
-def generate_smart_card(req: SmartCardRequest):  # إزالة async هنا لتتوافق مع مكتبة جينشين المتزامنة
+def generate_smart_card(req: SmartCardRequest):
+    if not os.environ.get("GEMINI_API_KEY"):
+        return {"html": "<p style='color:#e74c3c;'>⚠️ خطأ: لم يتم إدخال مفتاح الذكاء الاصطناعي في إعدادات Render بعد.</p>"}
+
     prompt = f"""
     أنت معلم كيمياء جزائري مبدع. قم بإنشاء "بطاقة ذكية" للمركب الكيميائي '{req.name}' (SMILES: {req.smiles}).
     أريد الرد بتنسيق HTML نقي فقط ومباشر (بدون أي علامات markdown مثل ```html).
@@ -101,11 +105,8 @@ def generate_smart_card(req: SmartCardRequest):  # إزالة async هنا لت�
     <p>[اذكر خصائصه مثل الحالة الفيزيائية، الرائحة، وهل هو آمن أم خطير]</p>
     """
     try:
-        # استخدام طريقتك الرسمية والجديدة تماماً هنا
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
-        
-        # تنظيف النص المستلم وعرضه في واجهة التطبيق
         clean_html = response.text.replace("```html", "").replace("```", "")
         return {"html": clean_html}
     except Exception as e:

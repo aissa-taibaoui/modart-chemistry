@@ -101,11 +101,11 @@ def name_compound(info: dict):
     try:
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
-        # ا
         clean_html = response.text.replace("```html", "").replace("```", "").strip()
         return {"iupac_name": clean_html}
-    except:
-        return {"iupac_name": "<span style='color:#e74c3c;'>تعذر تحليل المركب.</span>"}
+    except Exception as e:
+        # هنا قمنا بإزالة كاتم الصوت لكي نرى الخطأ الحقيقي
+        return {"iupac_name": f"<div style='color:#e74c3c; direction:ltr; text-align:left;'><b>Error Details:</b> {str(e)}</div>"}
 
 class SmartCardRequest(BaseModel):
     name: str
